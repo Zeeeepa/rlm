@@ -2,7 +2,9 @@ from dataclasses import dataclass
 from typing import Literal, List, Dict, Any, Optional
 from types import ModuleType
 
-ClientBackend = Literal["openai", "portkey"]
+ClientBackend = Literal[
+    "openai", "portkey", "openrouter", "vllm", "litellm", "anthropic"
+]
 EnvironmentType = Literal["local", "prime", "modal"]
 
 

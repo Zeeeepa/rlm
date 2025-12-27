@@ -1,9 +1,11 @@
 from rlm.core.types import QueryMetadata
 
+import textwrap
 from typing import Dict, List, Optional
 
 # System prompt for the REPL environment with explicit final answer checking
-RLM_SYSTEM_PROMPT = """You are tasked with answering a query with associated context. You can access, transform, and analyze this context interactively in a REPL environment that can recursively query sub-LLMs, which you are strongly encouraged to use as much as possible. You will be queried iteratively until you provide a final answer.
+RLM_SYSTEM_PROMPT = textwrap.dedent(
+    """You are tasked with answering a query with associated context. You can access, transform, and analyze this context interactively in a REPL environment that can recursively query sub-LLMs, which you are strongly encouraged to use as much as possible. You will be queried iteratively until you provide a final answer.
 
 The REPL environment is initialized with:
 1. A `context` variable that contains extremely important information about your query. You should check the content of the `context` variable to understand what you are working with. Make sure you look through it sufficiently as you answer your query.
@@ -77,6 +79,7 @@ IMPORTANT: When you are done with the iterative process, you MUST provide a fina
 
 Think step by step carefully, plan, and execute this plan immediately in your response -- do not just say "I will do this" or "I will do that". Output to the REPL environment and recursive LLMs as much as possible. Remember to explicitly answer the original query in your final answer.
 """
+)
 
 
 def build_rlm_system_prompt(

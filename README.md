@@ -20,13 +20,13 @@ To install the latest from `main`:
 ```
 pip install git+https://github.com/alexzhang13/rlm.git
 ```
+``` -->
 
 ## Quick Setup
 ```
 curl -LsSf https://astral.sh/uv/install.sh | sh
 uv init && uv venv --python 3.12  # change version as needed
 uv pip install -e .
-``` -->
 
 ### Local Environments
 
@@ -34,4 +34,9 @@ uv pip install -e .
 
 ```uv add modal```
 
-## Reading
+
+### Model Providers
+
+
+## Relevant Reading
+**[Oct '25]** [Recursive Language Models Blogpost](https://alexzhang13.github.io/blog/2025/rlm/)

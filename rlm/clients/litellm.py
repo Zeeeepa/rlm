@@ -1,41 +1,27 @@
-from rlm.clients.base_lm import BaseLM, UsageSummary, ModelUsageSummary
+from rlm.clients.base_lm import BaseLM
+from rlm.core.types import UsageSummary, ModelUsageSummary
 from typing import Dict, Any, Optional, List
 from collections import defaultdict
-import openai
-import os
-
-from dotenv import load_dotenv
-
-load_dotenv()
-
-# Load API keys from environment variables
-DEFAULT_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-DEFAULT_OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+import litellm
 
 
-class OpenAIClient(BaseLM):
+class LiteLLMClient(BaseLM):
     """
-    LM Client for running models with the OpenAI API. Works with vLLM as well.
+    LM Client for running models with LiteLLM.
+    LiteLLM provides a unified interface to 100+ LLM providers.
     """
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
         model_name: Optional[str] = None,
-        base_url: Optional[str] = None,
+        api_key: Optional[str] = None,
+        api_base: Optional[str] = None,
         **kwargs,
     ):
         super().__init__(model_name=model_name, **kwargs)
-
-        if api_key is None:
-            if base_url == "https://api.openai.com/v1" or base_url is None:
-                api_key = DEFAULT_OPENAI_API_KEY
-            elif base_url == "https://openrouter.ai/api/v1":
-                api_key = DEFAULT_OPENROUTER_API_KEY
-
-        # For vLLM, set base_url to local vLLM server address.
-        self.client = openai.OpenAI(api_key=api_key, base_url=base_url)
         self.model_name = model_name
+        self.api_key = api_key
+        self.api_base = api_base
 
         # Per-model usage tracking
         self.model_call_counts: Dict[str, int] = defaultdict(int)
@@ -57,9 +43,15 @@ class OpenAIClient(BaseLM):
 
         model = model or self.model_name
         if not model:
-            raise ValueError("Model name is required for OpenAI client.")
+            raise ValueError("Model name is required for LiteLLM client.")
 
-        response = self.client.chat.completions.create(model=model, messages=messages)
+        kwargs = {"model": model, "messages": messages}
+        if self.api_key:
+            kwargs["api_key"] = self.api_key
+        if self.api_base:
+            kwargs["api_base"] = self.api_base
+
+        response = litellm.completion(**kwargs)
         self._track_cost(response, model)
         return response.choices[0].message.content
 
@@ -77,15 +69,19 @@ class OpenAIClient(BaseLM):
 
         model = model or self.model_name
         if not model:
-            raise ValueError("Model name is required for OpenAI client.")
+            raise ValueError("Model name is required for LiteLLM client.")
 
-        response = await self.client.chat.completions.create(
-            model=model, messages=messages
-        )
+        kwargs = {"model": model, "messages": messages}
+        if self.api_key:
+            kwargs["api_key"] = self.api_key
+        if self.api_base:
+            kwargs["api_base"] = self.api_base
+
+        response = await litellm.acompletion(**kwargs)
         self._track_cost(response, model)
         return response.choices[0].message.content
 
-    def _track_cost(self, response: openai.ChatCompletion, model: str):
+    def _track_cost(self, response, model: str):
         self.model_call_counts[model] += 1
         self.model_input_tokens[model] += response.usage.prompt_tokens
         self.model_output_tokens[model] += response.usage.completion_tokens

@@ -1,6 +1,4 @@
 from rlm.clients.base_lm import BaseLM
-from rlm.clients.openai import OpenAIClient
-from rlm.clients.portkey import PortkeyClient
 from rlm.core.types import ClientBackend
 
 from dotenv import load_dotenv
@@ -18,8 +16,34 @@ def get_client(
     Currently supported backends: ['openai']
     """
     if backend == "openai":
+        from rlm.clients.openai import OpenAIClient
+
+        return OpenAIClient(**backend_kwargs)
+    elif backend == "vllm":
+        from rlm.clients.openai import OpenAIClient
+
+        assert "base_url" in backend_kwargs, (
+            "base_url is required to be set to local vLLM server address for vLLM"
+        )
         return OpenAIClient(**backend_kwargs)
     elif backend == "portkey":
+        from rlm.clients.portkey import PortkeyClient
+
         return PortkeyClient(**backend_kwargs)
+    elif backend == "openrouter":
+        from rlm.clients.openai import OpenAIClient
+
+        backend_kwargs.setdefault("base_url", "https://openrouter.ai/api/v1")
+        return OpenAIClient(**backend_kwargs)
+    elif backend == "litellm":
+        from rlm.clients.litellm import LiteLLMClient
+
+        return LiteLLMClient(**backend_kwargs)
+    elif backend == "anthropic":
+        from rlm.clients.anthropic import AnthropicClient
+
+        return AnthropicClient(**backend_kwargs)
     else:
-        raise ValueError(f"Unknown backend: {backend}. Supported backends: ['openai']")
+        raise ValueError(
+            f"Unknown backend: {backend}. Supported backends: ['openai', 'vllm', 'portkey', 'openrouter', 'litellm', 'anthropic']"
+        )
