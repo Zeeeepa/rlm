@@ -1,6 +1,6 @@
-from rlm.environments.base_env import NonIsolatedEnv, REPLResult
+from rlm.environments.base_env import NonIsolatedEnv
 from rlm.core.comms_utils import send_lm_request, LMRequest
-from rlm.core.types import RLMChatCompletion
+from rlm.core.types import RLMChatCompletion, REPLResult
 
 from typing import Optional, Any, Tuple, List
 from contextlib import contextmanager
